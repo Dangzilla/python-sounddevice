@@ -1273,7 +1273,7 @@ class RawInputStream(_StreamBase):
         This is the same as `InputStream`, except that the *callback*
         function and :meth:`~RawStream.read` work on plain Python buffer
         objects instead of on NumPy arrays.
-        NumPy is not necessary to use this.
+        NumPy is not necessary for using this.
 
         Parameters
         ----------
@@ -1313,7 +1313,7 @@ class RawInputStream(_StreamBase):
 
         This is the same as `Stream.read()`, except that it returns
         a plain Python buffer object instead of a NumPy array.
-        NumPy is not necessary to use this.
+        NumPy is not necessary for using this.
 
         Parameters
         ----------
@@ -1357,7 +1357,7 @@ class RawOutputStream(_StreamBase):
         This is the same as `OutputStream`, except that the *callback*
         function and :meth:`~RawStream.write` work on plain Python
         buffer objects instead of on NumPy arrays.
-        NumPy is not necessary to use this.
+        NumPy is not necessary for using this.
 
         Parameters
         ----------
@@ -1397,7 +1397,7 @@ class RawOutputStream(_StreamBase):
 
         This is the same as `Stream.write()`, except that it expects
         a plain Python buffer object instead of a NumPy array.
-        NumPy is not necessary to use this.
+        NumPy is not necessary for using this.
 
         Parameters
         ----------
@@ -1452,9 +1452,9 @@ class RawStream(RawInputStream, RawOutputStream):
         This is the same as `Stream`, except that the *callback*
         function and `read()`/`write()` work on plain Python buffer
         objects instead of on NumPy arrays.
-        NumPy is not necessary to use this.
+        NumPy is not necessary for using this.
 
-        To open "raw" input-only or output-only stream use
+        To open a "raw" input-only or output-only stream use
         `RawInputStream` or `RawOutputStream`, respectively.
         If you want to handle audio data as NumPy arrays instead of
         buffer objects, use `Stream`, `InputStream` or `OutputStream`.
@@ -1985,6 +1985,9 @@ class CallbackFlags(object):
         that one or more zero samples have been inserted into the input
         buffer to compensate for an input underflow.
 
+        This can only happen in full-duplex streams (including
+        `playrec()`).
+
         """
         return self._hasflag(_lib.paInputUnderflow)
 
@@ -1998,6 +2001,9 @@ class CallbackFlags(object):
         too much CPU time.  Otherwise indicates that data prior to one
         or more samples in the input buffer was discarded.
 
+        This can happen in full-duplex and input-only streams (including
+        `playrec()` and `rec()`).
+
         """
         return self._hasflag(_lib.paInputOverflow)
 
@@ -2007,6 +2013,9 @@ class CallbackFlags(object):
 
         Indicates that output data (or a gap) was inserted, possibly
         because the stream callback is using too much CPU time.
+
+        This can happen in full-duplex and output-only streams
+        (including `playrec()` and `play()`).
 
         """
         return self._hasflag(_lib.paOutputUnderflow)
@@ -2018,6 +2027,10 @@ class CallbackFlags(object):
         Indicates that output data will be discarded because no room is
         available.
 
+        This can only happen in full-duplex streams (including
+        `playrec()`), but only when ``never_drop_input=True`` was
+        specified.  See `default.never_drop_input`.
+
         """
         return self._hasflag(_lib.paOutputOverflow)
 
@@ -2027,6 +2040,11 @@ class CallbackFlags(object):
 
         Some of all of the output data will be used to prime the stream,
         input data may be zero.
+
+        This will only take place with some of the host APIs, and only
+        if ``prime_output_buffers_using_stream_callback=True`` was
+        specified.
+        See `default.prime_output_buffers_using_stream_callback`.
 
         """
         return self._hasflag(_lib.paPrimingOutput)
@@ -2296,8 +2314,8 @@ class AsioSettings(object):
             The length of *channel_selectors* must match the
             corresponding *channels* parameter of `Stream()` (or
             variants), otherwise a crash may result.
-            The values in the selectors array must specify channels
-            within the range of supported channels.
+            The values in the *channel_selectors* array must specify
+            channels within the range of supported channels.
 
         Examples
         --------
